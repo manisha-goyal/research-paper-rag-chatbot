@@ -31,7 +31,6 @@
             text-align: center;
             padding: 15px;
             font-size: 1.5em;
-            font-weight: bold;
         }
 
         #messages {
@@ -106,7 +105,7 @@
         /* Left Panel: Upload Section */
         #upload-section {
             width: 25%;
-            background-color: #57068c; /* Change background to dark purple */
+            background-color: #57068c; /* Purple background */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -115,10 +114,11 @@
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
 
-        #upload-section h3 {
-            color: #ffffff; /* White text for visibility */
-            margin-bottom: 20px;
+        #upload-section .section-title {
+            color: white;
             text-align: center;
+            padding: 15px;
+            font-size: 1.5em;
         }
 
         #upload-section form {
@@ -133,21 +133,27 @@
             padding: 10px;
             font-size: 0.9em;
             width: 100%;
-            border: 1px solid #ffffff; /* White border for better contrast */
+            border: 1px solid #ffffff; /* White border */
             border-radius: 5px;
-            background-color: #fff; /* White background for inputs */
-            color: #57068c; /* Purple text inside input field */
+            background-color: #fff; /* White background */
+            color: #57068c; /* Purple text */
+            cursor: pointer;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        #upload-section input[type="file"]:hover {
+            background-color: #e5e5e5; /* Light gray on hover */
         }
 
         #upload-section button {
             padding: 10px 20px;
             background-color: #ffffff; /* White button */
-            color: #57068c; /* Purple text for button */
+            color: #57068c; /* Purple text */
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
-            transition: background-color 0.2s;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         #upload-section button:hover {
@@ -166,18 +172,18 @@
         }
 
         #uploadStatus.success {
-            background-color: #28a745; /* Green background for success */
+            background-color: #28a745; /* Green for success */
             color: #ffffff; /* White text */
         }
 
         #uploadStatus.error {
-            background-color: #dc3545; /* Red background for error */
+            background-color: #dc3545; /* Red for error */
             color: #ffffff; /* White text */
         }
 
         #uploadStatus.info {
-            background-color: #ffc107; /* Yellow background for info */
-            color: #57068c; /* Purple text for info */
+            background-color: #ffc107; /* Yellow for info */
+            color: #57068c; /* Purple text */
         }
 
         #bot-description {
@@ -215,11 +221,11 @@
 </head>
 <body>
     <div id="upload-section">
-        <p id="bot-description">This chatbot helps you analyze research papers.</p>
-        <p id="bot-description">Upload a research paper (pdf) to get started and ask specific questions about its content!</p>
-        <h3>Upload Research Paper</h3>
+        <p id="bot-description">This chatbot helps you analyze and understand research papers efficiently!</p>
+        <p id="bot-description">Upload a research paper (PDF) to get started and ask specific questions about its content.</p>
+        <p class="section-title">Upload Research Paper</p>
         <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="pdfFile" accept=".pdf" required>
+            <input type="file" id="pdfFile" accept=".pdf" required maxsize="5242880"> <!-- 5MB limit -->
             <button type="button" onclick="uploadPDF()">Upload</button>
         </form>
         <div id="uploadStatus"></div>
@@ -312,10 +318,18 @@
         async function uploadPDF() {
             const fileInput = document.getElementById('pdfFile');
             const statusDiv = document.getElementById('uploadStatus');
+            const maxSize = 5242880; // 5MB in bytes
             const formData = new FormData();
 
             if (!fileInput.files[0]) {
                 statusDiv.textContent = 'Please select a file first!';
+                statusDiv.className = 'error';
+                statusDiv.style.display = 'block';
+                return;
+            }
+
+            if (fileInput.files[0].size > maxSize) {
+                statusDiv.textContent = 'File is too large! Maximum size is 5MB.';
                 statusDiv.className = 'error';
                 statusDiv.style.display = 'block';
                 return;
