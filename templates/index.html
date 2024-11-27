@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot</title>
+    <title>Research Paper Chatbot</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #ffffff;
             margin: 0;
             padding: 0;
             height: 100vh;
-            width: 100vw;
+            display: flex;
+            flex-direction: row;
+            background-color: #f4f4f4;
         }
 
+        /* Right Panel: Chat Section */
         #chat {
+            width: 75%;
             display: flex;
             flex-direction: column;
             height: 100vh;
-            width: 100%;
-            margin: 0;
             background: white;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
         }
 
         #chat-header {
@@ -31,12 +32,11 @@
             padding: 15px;
             font-size: 1.5em;
             font-weight: bold;
-            flex-shrink: 0;
         }
 
         #messages {
             flex: 1;
-            padding: 20px;
+            padding: 20px 40px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -49,8 +49,8 @@
             border-radius: 20px;
             font-size: 1em;
             word-wrap: break-word;
-            white-space: pre-line; /* Preserves line breaks */
-            line-height: 1.5; /* Improves readability */
+            white-space: pre-line;
+            line-height: 1.5;
         }
 
         .user {
@@ -65,43 +65,18 @@
             margin-right: 30%;
         }
 
-        /* Add styles for lists within bot messages */
-        .bot ul, .bot ol {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-
-        .bot li {
-            margin: 8px 0;
-        }
-
-        /* Add styles for headers or sections within bot messages */
-        .bot h3, .bot h4 {
-            margin: 15px 0 10px 0;
-            color: #57068c;
-        }
-
-        /* Add styles for paragraphs within bot messages */
-        .bot p {
-            margin: 10px 0;
-        }
-
-        .loading {
-            font-style: italic;
-            color: gray;
-        }
-
         #input-container {
             display: flex;
             gap: 10px;
-            padding: 20px;
-            border-top: 1px solid #57068c;
-            background-color: #f9f9f9;
-            flex-shrink: 0;
+            padding: 20px 40px;
+            background-color: white;
+            justify-content: center;
+            align-items: center;
         }
 
         #input {
-            flex: 1;
+            width: 70%;
+            max-width: 600px;
             padding: 15px;
             border: 1px solid #57068c;
             border-radius: 5px;
@@ -128,22 +103,127 @@
             cursor: not-allowed;
         }
 
+        /* Left Panel: Upload Section */
+        #upload-section {
+            width: 25%;
+            background-color: #57068c; /* Change background to dark purple */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #upload-section h3 {
+            color: #ffffff; /* White text for visibility */
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        #upload-section form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            width: 80%;
+        }
+
+        #upload-section input[type="file"] {
+            padding: 10px;
+            font-size: 0.9em;
+            width: 100%;
+            border: 1px solid #ffffff; /* White border for better contrast */
+            border-radius: 5px;
+            background-color: #fff; /* White background for inputs */
+            color: #57068c; /* Purple text inside input field */
+        }
+
+        #upload-section button {
+            padding: 10px 20px;
+            background-color: #ffffff; /* White button */
+            color: #57068c; /* Purple text for button */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.2s;
+        }
+
+        #upload-section button:hover {
+            background-color: #e5e5e5; /* Light gray hover effect */
+        }
+
+        #uploadStatus {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 0.9em;
+            width: 80%;
+            padding: 10px;
+            border-radius: 5px;
+            color: #ffffff; /* Default white text */
+            display: none; /* Initially hidden */
+        }
+
+        #uploadStatus.success {
+            background-color: #28a745; /* Green background for success */
+            color: #ffffff; /* White text */
+        }
+
+        #uploadStatus.error {
+            background-color: #dc3545; /* Red background for error */
+            color: #ffffff; /* White text */
+        }
+
+        #uploadStatus.info {
+            background-color: #ffc107; /* Yellow background for info */
+            color: #57068c; /* Purple text for info */
+        }
+
+        #bot-description {
+            font-size: 1.5em;
+            color: #ffffff; /* White text for visibility */
+            text-align: left;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            padding: 0 10px;
+        }
+
         @media (max-width: 768px) {
-            .message {
-                max-width: 85%;
+            body {
+                flex-direction: column;
             }
 
-            #input-container {
+            #upload-section {
+                width: 100%;
+                height: 30%;
+                border-right: none;
+                border-bottom: 1px solid #ddd;
                 padding: 10px;
             }
 
-            button {
+            #messages {
                 padding: 10px 20px;
+            }
+
+            #chat {
+                width: 100%;
+                height: 70%;
             }
         }
     </style>
 </head>
 <body>
+    <div id="upload-section">
+        <p id="bot-description">This chatbot helps you analyze research papers.</p>
+        <p id="bot-description">Upload a research paper (pdf) to get started and ask specific questions about its content!</p>
+        <h3>Upload Research Paper</h3>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="pdfFile" accept=".pdf" required>
+            <button type="button" onclick="uploadPDF()">Upload</button>
+        </form>
+        <div id="uploadStatus"></div>
+    </div>
     <div id="chat">
         <div id="chat-header">Research Paper Chatbot</div>
         <div id="messages" aria-live="polite"></div>
@@ -226,6 +306,48 @@
         function handleKeyPress(event) {
             if (event.key === 'Enter') {
                 sendMessage();
+            }
+        }
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfFile');
+            const statusDiv = document.getElementById('uploadStatus');
+            const formData = new FormData();
+
+            if (!fileInput.files[0]) {
+                statusDiv.textContent = 'Please select a file first!';
+                statusDiv.className = 'error';
+                statusDiv.style.display = 'block';
+                return;
+            }
+
+            formData.append('file', fileInput.files[0]);
+
+            // Show info message while uploading
+            statusDiv.textContent = 'Uploading file...';
+            statusDiv.className = 'info';
+            statusDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.textContent = 'Upload successful! You can now ask questions about this paper.';
+                    statusDiv.className = 'success';
+                    fileInput.value = '';
+                } else {
+                    statusDiv.textContent = `Upload failed: ${data.error}`;
+                    statusDiv.className = 'error';
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Upload failed: Network error';
+                statusDiv.className = 'error';
+                console.error('Error:', error);
             }
         }
     </script>
