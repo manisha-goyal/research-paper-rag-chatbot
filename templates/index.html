@@ -160,7 +160,6 @@
     </div>
 
     <script>
-        let chatHistory = [];
 
         function sendMessage() {
             const input = document.getElementById('input');
@@ -179,13 +178,12 @@
             fetch('/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: question, chat_history: chatHistory })
+                body: JSON.stringify({ question: question})
             })
                 .then(response => response.json())
                 .then(data => {
                     loadingMessage.remove();
                     appendMessage(data.answer, 'bot');
-                    chatHistory.push({ question: question, answer: data.answer });
                 })
                 .catch(error => {
                     loadingMessage.remove();
