@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #chat { max-width: 600px; margin: auto; }
+        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        #input { width: 100%; }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h1>Chatbot</h1>
+        <div id="messages"></div>
+        <input type="text" id="input" placeholder="Ask a question..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <script>
+        let chatHistory = [];
+
+        function sendMessage() {
+            const input = document.getElementById('input');
+            const question = input.value;
+            input.value = '';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.textContent = 'You: ' + question;
+            document.getElementById('messages').appendChild(messageDiv);
+
+            fetch('/ask', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question: question, chat_history: chatHistory })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const answerDiv = document.createElement('div');
+                answerDiv.textContent = 'Bot: ' + data.answer;
+                document.getElementById('messages').appendChild(answerDiv);
+                chatHistory.push({ question: question, answer: data.answer });
+            });
+        }
+    </script>
+</body>
+</html>

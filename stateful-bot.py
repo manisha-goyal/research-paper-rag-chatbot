@@ -5,12 +5,31 @@ from langchain_openai import OpenAIEmbeddings
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_models import ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
+from flask import Flask, request, jsonify, render_template
 
 warnings.filterwarnings("ignore")
 
 load_dotenv()
 
 chat_history = []
+
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    data = request.json
+    question = data.get("question")
+    # chat_history = data.get("chat_history", [])
+    
+    res = qa({"question": question, "chat_history": chat_history})
+    history = (res["question"], res["answer"])
+    chat_history.append(history)
+    
+    return jsonify(res)
 
 if __name__ == "__main__":
 
@@ -23,16 +42,6 @@ if __name__ == "__main__":
 
     qa = ConversationalRetrievalChain.from_llm(
         llm=chat, chain_type="stuff", retriever=vectorstore.as_retriever()
-    )  
+    )
 
-    res = qa({"question": "What are the applications of generative AI according the the paper? Please number each application.", "chat_history": chat_history})
-    print(res)
-
-    history = (res["question"], res["answer"])
-    chat_history.append(history)
-
-    res = qa({"question": "Can you please elaborate more on application number 2?", "chat_history": chat_history})
-    print(res)
-
-
- 
+    app.run(debug=True)

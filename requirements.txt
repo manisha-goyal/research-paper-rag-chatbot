@@ -6,3 +6,4 @@ langchain-openai
 langchain-community
 python-dotenv
 pypdf
+Flask
