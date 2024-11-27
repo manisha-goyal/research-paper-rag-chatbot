@@ -23,7 +23,6 @@ def home():
 def ask():
     data = request.json
     question = data.get("question")
-    # chat_history = data.get("chat_history", [])
     
     res = qa({"question": question, "chat_history": chat_history})
     history = (res["question"], res["answer"])
