@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Research Paper Chatbot</title>
+    <!-- Add DOMPurify -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -285,6 +287,11 @@
         function appendMessage(text, className) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + className;
+
+            text = DOMPurify.sanitize(text, {
+                ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],
+                ALLOWED_ATTR: []
+            });
 
             // Format the text if it's a bot message
             if (className.includes('bot')) {
