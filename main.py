@@ -50,8 +50,11 @@ def upload_file():
             # Process the PDF and add to vectorstore
             texts = process_pdf(data_path)
             ingest_to_vectorstore(texts, vectorstore)
-
             logger.info("File successfully processed and added to database.")
+
+            os.remove(data_path)
+            logger.info(f"File deleted: {data_path}")
+
             return jsonify({"message": "File successfully processed and added to database"})
         except Exception as e:
             logger.error(f"Error processing file: {str(e)}")
@@ -70,7 +73,7 @@ def ask():
     question = data.get("question")
     
     try:
-        res = qa({
+        res = qa.invoke({
             "question": question, 
             "chat_history": session.get('chat_history', [])
         })
@@ -96,4 +99,4 @@ if __name__ == "__main__":
     )
 
     logger.info("Starting Flask app...")
-    app.run(debug=True)
+    app.run(debug=False)
