@@ -5,43 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        #chat { max-width: 600px; margin: auto; }
-        #messages { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
-        #input { width: 100%; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chat {
+            display: flex;
+            flex-direction: column;
+            height: 100vh; /* Ensure the chat occupies the full viewport */
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        #chat-header {
+            background-color: #000000;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            flex-shrink: 0; /* Ensure it does not shrink when resizing */
+        }
+
+        #messages {
+            flex: 1; /* Take up remaining space */
+            padding: 10px;
+            overflow-y: auto; /* Enable scrolling */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            word-wrap: break-word;
+        }
+
+        .user {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+
+        .bot {
+            background-color: #dbc1c3;
+            align-self: flex-start;
+        }
+
+        .loading {
+            font-style: italic;
+            color: gray;
+        }
+
+        #input-container {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: #f9f9f9;
+            flex-shrink: 0; /* Prevent shrinking */
+        }
+
+        #input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div id="chat">
-        <h1>Chatbot</h1>
-        <div id="messages"></div>
-        <input type="text" id="input" placeholder="Ask a question..." />
-        <button onclick="sendMessage()">Send</button>
+        <div id="chat-header">Research Paper Chatbot</div>
+        <div id="messages" aria-live="polite"></div>
+        <div id="input-container">
+            <input 
+                type="text" 
+                id="input" 
+                placeholder="Ask a question..." 
+                aria-label="Type your question here" 
+                onkeypress="handleKeyPress(event)"
+            />
+            <button id="send-button" onclick="sendMessage()">Send</button>
+        </div>
     </div>
+
     <script>
         let chatHistory = [];
 
         function sendMessage() {
             const input = document.getElementById('input');
-            const question = input.value;
-            input.value = '';
+            const sendButton = document.getElementById('send-button');
+            const question = input.value.trim();
 
-            const messageDiv = document.createElement('div');
-            messageDiv.textContent = 'You: ' + question;
-            document.getElementById('messages').appendChild(messageDiv);
+            if (!question) return;
+
+            input.value = '';
+            sendButton.disabled = true;
+
+            appendMessage(question, 'user');
+
+            const loadingMessage = appendMessage('Bot is typing...', 'bot loading');
 
             fetch('/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ question: question, chat_history: chatHistory })
             })
-            .then(response => response.json())
-            .then(data => {
-                const answerDiv = document.createElement('div');
-                answerDiv.textContent = 'Bot: ' + data.answer;
-                document.getElementById('messages').appendChild(answerDiv);
-                chatHistory.push({ question: question, answer: data.answer });
-            });
+                .then(response => response.json())
+                .then(data => {
+                    loadingMessage.remove();
+                    appendMessage(data.answer, 'bot');
+                    chatHistory.push({ question: question, answer: data.answer });
+                })
+                .catch(error => {
+                    loadingMessage.remove();
+                    appendMessage('Error: Unable to fetch response. Please try again.', 'bot');
+                    console.error('Error:', error);
+                })
+                .finally(() => {
+                    sendButton.disabled = false;
+                    scrollToBottom();
+                });
+        }
+
+        function appendMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + className;
+            messageDiv.textContent = text;
+            document.getElementById('messages').appendChild(messageDiv);
+            scrollToBottom();
+            return messageDiv;
+        }
+
+        function scrollToBottom() {
+            const messages = document.getElementById('messages');
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
         }
     </script>
 </body>

@@ -24,11 +24,14 @@ def ask():
     data = request.json
     question = data.get("question")
     
-    res = qa({"question": question, "chat_history": chat_history})
-    history = (res["question"], res["answer"])
-    chat_history.append(history)
-    
-    return jsonify(res)
+    try:
+        res = qa({"question": question, "chat_history": chat_history})
+        history = (res["question"], res["answer"])
+        chat_history.append(history)
+        
+        return jsonify(res)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
 
