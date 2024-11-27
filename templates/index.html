@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -87,12 +88,13 @@
         button {
             padding: 15px 30px;
             border: none;
-            background-color: #57068c;
+            background-color: #702b9d;
             color: white;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.2s;
+            font-weight: bold;
         }
 
         button:hover {
@@ -107,7 +109,7 @@
         /* Left Panel: Upload Section */
         #upload-section {
             width: 25%;
-            background-color: #57068c; /* Purple background */
+            background-color: #57068c;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -135,31 +137,32 @@
             padding: 10px;
             font-size: 0.9em;
             width: 100%;
-            border: 1px solid #ffffff; /* White border */
+            border: 1px solid #ffffff;
             border-radius: 5px;
-            background-color: #fff; /* White background */
-            color: #57068c; /* Purple text */
+            background-color: #fff;
+            color: #57068c;
             cursor: pointer;
             transition: background-color 0.2s ease, color 0.2s ease;
         }
 
         #upload-section input[type="file"]:hover {
-            background-color: #e5e5e5; /* Light gray on hover */
+            background-color: #e5e5e5;
         }
 
         #upload-section button {
             padding: 10px 20px;
-            background-color: #ffffff; /* White button */
-            color: #57068c; /* Purple text */
+            background-color: #ffffff;
+            color: #57068c;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.2s ease, color 0.2s ease;
+            font-weight: bold;
         }
 
         #upload-section button:hover {
-            background-color: #e5e5e5; /* Light gray hover effect */
+            background-color: #e5e5e5;
         }
 
         #uploadStatus {
@@ -169,28 +172,28 @@
             width: 80%;
             padding: 10px;
             border-radius: 5px;
-            color: #ffffff; /* Default white text */
-            display: none; /* Initially hidden */
+            color: #ffffff;
+            display: none;
         }
 
         #uploadStatus.success {
-            background-color: #28a745; /* Green for success */
-            color: #ffffff; /* White text */
+            background-color: #28a745;
+            color: #ffffff;
         }
 
         #uploadStatus.error {
-            background-color: #dc3545; /* Red for error */
-            color: #ffffff; /* White text */
+            background-color: #dc3545;
+            color: #ffffff;
         }
 
         #uploadStatus.info {
-            background-color: #ffc107; /* Yellow for info */
-            color: #57068c; /* Purple text */
+            background-color: #ffc107;
+            color: #57068c;
         }
 
         #bot-description {
             font-size: 1.5em;
-            color: #ffffff; /* White text for visibility */
+            color: #ffffff;
             text-align: left;
             margin-bottom: 20px;
             line-height: 1.5;
@@ -221,10 +224,12 @@
         }
     </style>
 </head>
+
 <body>
     <div id="upload-section">
         <p id="bot-description">This chatbot helps you analyze and understand research papers efficiently!</p>
-        <p id="bot-description">Upload a research paper (PDF) to get started and ask specific questions about its content.</p>
+        <p id="bot-description">Upload a research paper (PDF) to get started and ask specific questions about its
+            content.</p>
         <p class="section-title">Upload Research Paper</p>
         <form id="uploadForm" enctype="multipart/form-data">
             <input type="file" id="pdfFile" accept=".pdf" required maxsize="5242880"> <!-- 5MB limit -->
@@ -236,13 +241,8 @@
         <div id="chat-header">Research Paper Chatbot</div>
         <div id="messages" aria-live="polite"></div>
         <div id="input-container">
-            <input 
-                type="text" 
-                id="input" 
-                placeholder="Ask a question..." 
-                aria-label="Type your question here" 
-                onkeypress="handleKeyPress(event)"
-            />
+            <input type="text" id="input" placeholder="Ask a question..." aria-label="Type your question here"
+                onkeypress="handleKeyPress(event)" />
             <button id="send-button" onclick="sendMessage()">Send</button>
         </div>
     </div>
@@ -266,7 +266,7 @@
             fetch('/ask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: question})
+                body: JSON.stringify({ question: question })
             })
                 .then(response => response.json())
                 .then(data => {
@@ -297,14 +297,14 @@
             if (className.includes('bot')) {
                 // Replace asterisks with proper HTML formatting
                 text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                
+
                 // Convert numbered lists into proper HTML lists
                 text = text.replace(/(\d+\.\s+)/g, '<br>$1');
-                
+
                 // Add paragraph breaks for better readability
                 text = text.split('\n').map(para => `<p>${para}</p>`).join('');
             }
-            
+
             messageDiv.innerHTML = text;
             document.getElementById('messages').appendChild(messageDiv);
             scrollToBottom();
@@ -373,4 +373,5 @@
         }
     </script>
 </body>
+
 </html>
