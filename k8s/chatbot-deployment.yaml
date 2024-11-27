@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: chatbot
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: chatbot
@@ -15,9 +15,12 @@ spec:
       containers:
       - name: chatbot
         image: your-registry/your-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8000
         env:
+        - name: ENVIRONMENT
+            value: "production"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
@@ -43,13 +46,6 @@ spec:
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
       volumes:
       - name: pdf-data
         emptyDir: {}

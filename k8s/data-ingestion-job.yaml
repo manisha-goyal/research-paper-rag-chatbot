@@ -8,8 +8,11 @@ spec:
       containers:
       - name: data-ingestion
         image: your-registry/your-app:latest
-        command: ["python", "ingestion.py"]
+        imagePullPolicy: Always
+        command: ["python", "data_ingestion.py"]
         env:
+        - name: ENVIRONMENT
+            value: "production"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
