@@ -35,6 +35,11 @@ spec:
               key: langtrace-api-key
         - name: INDEX_NAME
           value: "pdf-vectors"
+        - name: FLASK_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: flask-secret-key
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data

@@ -2,18 +2,19 @@ import os
 import warnings
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 from langtrace_python_sdk import langtrace
 from langchain_openai import OpenAIEmbeddings
 from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_models import ChatOpenAI
 from ingestion import process_pdf, get_vectorstore, ingest_to_vectorstore
+import uuid
 
 warnings.filterwarnings("ignore")
 load_dotenv()
 
-chat_history = []
 app = Flask(__name__)
+app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
 
 # Initialize embeddings and vectorstore at startup
 embeddings = OpenAIEmbeddings(openai_api_type=os.environ.get("OPENAI_API_KEY"))
@@ -57,13 +58,23 @@ def upload_file():
 
 @app.route('/ask', methods=['POST'])
 def ask():
+    if 'user_id' not in session:
+        session['user_id'] = str(uuid.uuid4())
+        session['chat_history'] = []
+        
     data = request.json
     question = data.get("question")
     
     try:
-        res = qa({"question": question, "chat_history": chat_history})
+        res = qa({
+            "question": question, 
+            "chat_history": session.get('chat_history', [])
+        })
+        
         history = (res["question"], res["answer"])
+        chat_history = session.get('chat_history', [])
         chat_history.append(history)
+        session['chat_history'] = chat_history
         
         return jsonify(res)
     except Exception as e:
@@ -73,6 +84,7 @@ if __name__ == "__main__":
 
     langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
 
+    # Initialize chat components
     chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-3.5-turbo")
     qa = ConversationalRetrievalChain.from_llm(
         llm=chat, chain_type="stuff", retriever=vectorstore.as_retriever()
