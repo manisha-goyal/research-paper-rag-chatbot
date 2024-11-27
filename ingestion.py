@@ -28,7 +28,7 @@ def ingest_to_vectorstore(texts, vectorstore):
     return vectorstore.add_documents(texts)
 
 def initial_ingestion():
-    """Initial ingestion of all PDFs in data directory"""
+    """Ingestion of all PDFs in data directory"""
     print("Starting initial ingestion...")
     
     # Load all PDFs from data directory
@@ -51,7 +51,7 @@ def initial_ingestion():
     
     # Add documents to vectorstore
     ingest_to_vectorstore(texts, vectorstore)
-    print("Completed initial ingestion")
+    print("Completed ingestion")
 
 if __name__ == "__main__":
     initial_ingestion()
