@@ -7,40 +7,37 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
+            width: 100vw;
         }
 
         #chat {
             display: flex;
             flex-direction: column;
-            height: 100vh; /* Ensure the chat occupies the full viewport */
-            max-width: 600px;
-            margin: auto;
+            height: 100vh;
+            width: 100%;
+            margin: 0;
             background: white;
-            border-radius: 8px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
 
         #chat-header {
-            background-color: #000000;
+            background-color: #57068c;
             color: white;
             text-align: center;
-            padding: 10px;
+            padding: 15px;
             font-size: 1.5em;
             font-weight: bold;
-            flex-shrink: 0; /* Ensure it does not shrink when resizing */
+            flex-shrink: 0;
         }
 
         #messages {
-            flex: 1; /* Take up remaining space */
-            padding: 10px;
-            overflow-y: auto; /* Enable scrolling */
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -48,20 +45,45 @@
 
         .message {
             max-width: 70%;
-            padding: 10px 15px;
+            padding: 12px 18px;
             border-radius: 20px;
-            font-size: 0.9em;
+            font-size: 1em;
             word-wrap: break-word;
+            white-space: pre-line; /* Preserves line breaks */
+            line-height: 1.5; /* Improves readability */
         }
 
         .user {
-            background-color: #d1e7dd;
+            background-color: #eee6f3;
             align-self: flex-end;
+            margin-left: 30%;
         }
 
         .bot {
-            background-color: #dbc1c3;
+            background-color: #eee6f3;
             align-self: flex-start;
+            margin-right: 30%;
+        }
+
+        /* Add styles for lists within bot messages */
+        .bot ul, .bot ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .bot li {
+            margin: 8px 0;
+        }
+
+        /* Add styles for headers or sections within bot messages */
+        .bot h3, .bot h4 {
+            margin: 15px 0 10px 0;
+            color: #57068c;
+        }
+
+        /* Add styles for paragraphs within bot messages */
+        .bot p {
+            margin: 10px 0;
         }
 
         .loading {
@@ -72,37 +94,52 @@
         #input-container {
             display: flex;
             gap: 10px;
-            padding: 10px;
-            border-top: 1px solid #ccc;
+            padding: 20px;
+            border-top: 1px solid #57068c;
             background-color: #f9f9f9;
-            flex-shrink: 0; /* Prevent shrinking */
+            flex-shrink: 0;
         }
 
         #input {
             flex: 1;
-            padding: 10px;
-            border: 1px solid #ccc;
+            padding: 15px;
+            border: 1px solid #57068c;
             border-radius: 5px;
             font-size: 1em;
         }
 
         button {
-            padding: 10px 20px;
+            padding: 15px 30px;
             border: none;
-            background-color: #007bff;
+            background-color: #57068c;
             color: white;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1em;
+            transition: background-color 0.2s;
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #57068c;
         }
 
         button:disabled {
             background-color: #ccc;
             cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .message {
+                max-width: 85%;
+            }
+
+            #input-container {
+                padding: 10px;
+            }
+
+            button {
+                padding: 10px 20px;
+            }
         }
     </style>
 </head>
@@ -164,7 +201,20 @@
         function appendMessage(text, className) {
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ' + className;
-            messageDiv.textContent = text;
+
+            // Format the text if it's a bot message
+            if (className.includes('bot')) {
+                // Replace asterisks with proper HTML formatting
+                text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                
+                // Convert numbered lists into proper HTML lists
+                text = text.replace(/(\d+\.\s+)/g, '<br>$1');
+                
+                // Add paragraph breaks for better readability
+                text = text.split('\n').map(para => `<p>${para}</p>`).join('');
+            }
+            
+            messageDiv.innerHTML = text;
             document.getElementById('messages').appendChild(messageDiv);
             scrollToBottom();
             return messageDiv;
