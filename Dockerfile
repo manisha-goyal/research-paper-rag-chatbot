@@ -17,6 +17,9 @@ COPY main.py /app/
 COPY templates /app/templates
 COPY data /app/data
 
+# Expose port to run flask app
+EXPOSE 8000
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 
