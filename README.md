@@ -5,6 +5,7 @@ A Retrieval-Augmented Generation (RAG) chatbot built with LangChain, OpenAI, Pin
 ## Features
 
 - PDF document ingestion and processing
+- Upload new research papers through the web interface
 - Vector storage using Pinecone
 - Conversational memory to maintain context
 - Web-based chat interface
