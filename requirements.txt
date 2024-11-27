@@ -7,3 +7,5 @@ langchain-community
 python-dotenv
 pypdf
 Flask
+setuptools
+langtrace-python-sdk

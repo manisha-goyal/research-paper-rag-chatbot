@@ -6,6 +6,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_community.chat_models import ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
 from flask import Flask, request, jsonify, render_template
+from langtrace_python_sdk import langtrace
 
 warnings.filterwarnings("ignore")
 
@@ -34,6 +35,8 @@ def ask():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+
+    langtrace.init(api_key=os.getenv("LANGTRACE_API_KEY"))
 
     embeddings = OpenAIEmbeddings(openai_api_type=os.environ.get("OPENAI_API_KEY"))
     vectorstore = PineconeVectorStore(
