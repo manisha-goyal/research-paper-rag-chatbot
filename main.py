@@ -4,9 +4,8 @@ from config import Config
 from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, render_template, session
 from langtrace_python_sdk import langtrace
-from langchain_openai import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.chat_models import ChatOpenAI
 from data_ingestion import process_pdf, get_vectorstore, ingest_to_vectorstore
 import uuid
 
