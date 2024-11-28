@@ -8,6 +8,7 @@ if os.getenv('ENVIRONMENT') == 'development':
 class Config:
     FLASK_SECRET_KEY = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+    PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
     LANGTRACE_API_KEY = os.getenv('LANGTRACE_API_KEY')
     INDEX_NAME = os.getenv('INDEX_NAME', 'pdf-vectors')
 
