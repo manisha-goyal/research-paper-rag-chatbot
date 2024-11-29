@@ -20,7 +20,7 @@ spec:
         - containerPort: 8000
         env:
         - name: ENVIRONMENT
-            value: "production"
+          value: "production"
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
