@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: your-registry/your-app:latest
+        image: mg7609/research-paper-rag-chatbot:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
