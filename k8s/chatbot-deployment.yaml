@@ -46,6 +46,18 @@ spec:
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 20
       volumes:
       - name: pdf-data
         emptyDir: {}

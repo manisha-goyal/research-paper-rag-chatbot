@@ -15,14 +15,18 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
-app.secret_key = Config.FLASK_SECRET_KEY
 openai_api_key = Config.OPENAI_API_KEY
-index_name = Config.INDEX_NAME
 langtrace_api_key = Config.LANGTRACE_API_KEY
+app.secret_key = Config.FLASK_SECRET_KEY
+index_name = Config.INDEX_NAME
 
 # Initialize embeddings and vectorstore at startup
-embeddings = OpenAIEmbeddings(openai_api_type=openai_api_key)
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
 vectorstore = get_vectorstore(embeddings, index_name)
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify(status='healthy'), 200
 
 @app.route('/')
 def home():
