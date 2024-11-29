@@ -51,26 +51,20 @@ def split_documents(documents):
     return texts
 
 def process_pdf(pdf_path):
-    """Process a single PDF file or all PDF files in a directory and return text chunks."""
-    if os.path.isfile(pdf_path):
-        # Process a single PDF file
+    """Process a single PDF file and return text chunks."""
+    try:
+        # Ensure the path is a valid file
+        if not os.path.isfile(pdf_path):
+            raise ValueError(f"Provided path '{pdf_path}' is not a valid file.")
+
+        # Load and process the PDF
         loader = PyPDFLoader(pdf_path)
         documents = loader.load()
-        logger.info(f"Loaded {len(documents)} documents from file: {pdf_path}")
+        logger.info(f"Loaded {len(documents)} document(s) from file: {pdf_path}")
         return split_documents(documents)
-    elif os.path.isdir(pdf_path):
-        # Process all PDF files in the directory
-        loader = DirectoryLoader(
-            pdf_path,
-            glob="**/*.pdf",
-            loader_cls=PyPDFLoader
-        )
-        documents = loader.load()
-        logger.info(f"Loaded {len(documents)} documents from directory: {pdf_path}")
-        return split_documents(documents)
-    else:
-        logger.error("The provided path is neither a file nor a directory.")
-        raise ValueError("The provided path is neither a file nor a directory.")
+    except Exception as e:
+        logger.error(f"Error processing PDF file '{pdf_path}': {str(e)}")
+        raise
 
 def ingest_to_vectorstore(texts, vectorstore):
     """Add documents to vectorstore"""
