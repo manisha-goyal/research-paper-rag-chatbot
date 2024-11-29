@@ -3,7 +3,6 @@ import logging
 from config import Config
 from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
 
@@ -83,20 +82,3 @@ def ingest_to_vectorstore(texts, vectorstore):
     except Exception as e:
         logger.error(f"Error ingesting documents to vectorstore: {str(e)}")
         raise
-
-def initial_ingestion():
-    """Ingestion of all PDFs in data directory"""
-    logger.info("Starting initial ingestion...")
-
-    # Initialize embeddings and vectorstore
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
-    vectorstore = get_vectorstore(embeddings, index_name)
-    
-    # Load the PDFs and add to vectorstore
-    texts = process_pdf('data')
-    ingest_to_vectorstore(texts, vectorstore)
-
-    logger.info("Completed ingestion")
-
-if __name__ == "__main__":
-    initial_ingestion()

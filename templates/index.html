@@ -232,8 +232,8 @@
             content.</p>
         <p class="section-title">Upload Research Paper</p>
         <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="pdfFile" accept=".pdf" required maxsize="5242880"> <!-- 5MB limit -->
-            <button type="button" onclick="uploadPDF()">Upload</button>
+            <input type="file" id="pdfFiles" accept=".pdf" multiple required>
+            <button type="button" onclick="uploadPDFs()">Upload</button>
         </form>
         <div id="uploadStatus"></div>
     </div>
@@ -322,30 +322,42 @@
             }
         }
 
-        async function uploadPDF() {
-            const fileInput = document.getElementById('pdfFile');
+        async function uploadPDFs() {
+            const fileInput = document.getElementById('pdfFiles');
             const statusDiv = document.getElementById('uploadStatus');
             const maxSize = 5242880; // 5MB in bytes
             const formData = new FormData();
 
-            if (!fileInput.files[0]) {
-                statusDiv.textContent = 'Please select a file first!';
+            if (!fileInput.files.length) {
+                statusDiv.textContent = 'Please select at least one file!';
                 statusDiv.className = 'error';
                 statusDiv.style.display = 'block';
                 return;
             }
 
-            if (fileInput.files[0].size > maxSize) {
-                statusDiv.textContent = 'File is too large! Maximum size is 5MB.';
+            // Validate files before adding them to FormData
+            let invalidFiles = [];
+            for (let file of fileInput.files) {
+                if (!file.name.endsWith('.pdf')) {
+                    invalidFiles.push(file.name);
+                    continue;
+                }
+                if (file.size > maxSize) {
+                    invalidFiles.push(`${file.name} (too large)`);
+                    continue;
+                }
+                formData.append('files', file);
+            }
+
+            if (invalidFiles.length > 0) {
+                statusDiv.textContent = `Invalid files: ${invalidFiles.join(', ')}`;
                 statusDiv.className = 'error';
                 statusDiv.style.display = 'block';
                 return;
             }
-
-            formData.append('file', fileInput.files[0]);
 
             // Show info message while uploading
-            statusDiv.textContent = 'Uploading file...';
+            statusDiv.textContent = 'Uploading files...';
             statusDiv.className = 'info';
             statusDiv.style.display = 'block';
 
@@ -358,19 +370,23 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    statusDiv.textContent = 'Upload successful! You can now ask questions about this paper.';
+                    statusDiv.textContent = 'File upload successful! All valid files have been processed.';
                     statusDiv.className = 'success';
-                    fileInput.value = '';
+                    fileInput.value = ''; // Clear file input after successful upload
                 } else {
-                    statusDiv.textContent = `Upload failed: ${data.error}`;
+                    const errorMessage = data.errors
+                        ? `Bulk upload failed for some files: ${data.errors.map(e => `${e.file}: ${e.error}`).join(', ')}`
+                        : `Bulk upload failed: ${data.error}`;
+                    statusDiv.textContent = errorMessage;
                     statusDiv.className = 'error';
                 }
             } catch (error) {
-                statusDiv.textContent = 'Upload failed: Network error';
+                statusDiv.textContent = 'Bulk upload failed: Network error';
                 statusDiv.className = 'error';
                 console.error('Error:', error);
             }
         }
+
     </script>
 </body>
 

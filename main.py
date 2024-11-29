@@ -33,39 +33,64 @@ def home():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        logger.error("No file part in the request.")
-        return jsonify({"error": "No file part"}), 400
+def upload_files():
+    files = request.files.getlist('files')  # Handle multiple files
     
-    file = request.files['file']
-    if file.filename == '':
-        logger.error("No selected file.")
-        return jsonify({"error": "No selected file"}), 400
-    
-    if file and file.filename.endswith('.pdf'):
-        # Save the file temporarily
-        filename = secure_filename(file.filename)
-        data_path = os.path.join('data', filename)
-        file.save(data_path)
-        logger.info(f"File saved: {data_path}")
+    if not files:
+        logger.error("No files provided for bulk upload.")
+        return jsonify({"error": "No files provided"}), 400
+
+    processed_files = []
+    errors = []
+
+    try:
+        for file in files:
+            filename = file.filename
+
+            # Validate file presence and type
+            if not filename:
+                error_msg = "File has no name."
+                logger.error(error_msg)
+                errors.append({"file": None, "error": error_msg})
+                continue
+
+            if not filename.endswith('.pdf'):
+                error_msg = f"File '{filename}' is not a PDF."
+                logger.error(error_msg)
+                errors.append({"file": filename, "error": error_msg})
+                continue
+
+            try:
+                # Save the file temporarily
+                filename = secure_filename(filename)
+                file_path = os.path.join('data', filename)
+                file.save(file_path)
+                logger.info(f"File saved: {file_path}")
+
+                # Process the PDF and add to vectorstore
+                texts = process_pdf(file_path)
+                ingest_to_vectorstore(texts, vectorstore)
+                logger.info("File successfully processed and added to database: {filename}")
+
+                os.remove(file_path)
+                processed_files.append(filename)
+
+            except Exception as e:
+                error_msg = f"Error processing file '{filename}': {str(e)}"
+                logger.error(error_msg)
+                errors.append({"file": filename, "error": error_msg})
+
+        # Prepare response
+        response = {"processed_files": processed_files}
+        if errors:
+            response["errors"] = errors
+            logger.warning(f"Bulk upload completed with errors: {errors}")
         
-        try:
-            # Process the PDF and add to vectorstore
-            texts = process_pdf(data_path)
-            ingest_to_vectorstore(texts, vectorstore)
-            logger.info("File successfully processed and added to database.")
+        return jsonify(response), 200 if not errors else 207
 
-            os.remove(data_path)
-            logger.info(f"File deleted: {data_path}")
-
-            return jsonify({"message": "File successfully processed and added to database"})
-        except Exception as e:
-            logger.error(f"Error processing file: {str(e)}")
-            return jsonify({"error": str(e)}), 500
-    else:
-        logger.error("Only PDF files are allowed.")
-        return jsonify({"error": "Only PDF files are allowed"}), 400
+    except Exception as e:
+        logger.error(f"Error during bulk upload: {str(e)}")
+        return jsonify({"error": f"{str(e)}"}), 500
 
 @app.route('/ask', methods=['POST'])
 def ask():
