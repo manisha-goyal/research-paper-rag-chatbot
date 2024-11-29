@@ -1,13 +1,12 @@
-import os
 import logging
 from config import Config
-from werkzeug.utils import secure_filename
 from flask import Flask, request, jsonify, render_template, session
 from langtrace_python_sdk import langtrace
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import ConversationalRetrievalChain
-from data_ingestion import process_pdf, get_vectorstore, ingest_to_vectorstore
+from data_ingestion import validate_file, get_vectorstore, process_file
 import uuid
+import json
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,10 +18,9 @@ openai_api_key = Config.OPENAI_API_KEY
 langtrace_api_key = Config.LANGTRACE_API_KEY
 app.secret_key = Config.FLASK_SECRET_KEY
 index_name = Config.INDEX_NAME
+COOKIE_SIZE_LIMIT = 4093
 
-# Initialize embeddings and vectorstore at startup
-embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
-vectorstore = get_vectorstore(embeddings, index_name)
+vectorstore = None
 
 @app.route('/health', methods=['GET'])
 def health_check():
@@ -45,40 +43,20 @@ def upload_files():
 
     try:
         for file in files:
-            filename = file.filename
-
-            # Validate file presence and type
-            if not filename:
-                error_msg = "File has no name."
-                logger.error(error_msg)
-                errors.append({"file": None, "error": error_msg})
+            # Validate the file
+            filename, error = validate_file(file)
+            if error:
+                logger.error(error)
+                errors.append({"file": filename, "error": error})
                 continue
 
-            if not filename.endswith('.pdf'):
-                error_msg = f"File '{filename}' is not a PDF."
-                logger.error(error_msg)
-                errors.append({"file": filename, "error": error_msg})
+            # Process the file
+            filename, error = process_file(file, vectorstore)
+            if error:
+                errors.append({"file": filename, "error": error})
                 continue
 
-            try:
-                # Save the file temporarily
-                filename = secure_filename(filename)
-                file_path = os.path.join('data', filename)
-                file.save(file_path)
-                logger.info(f"File saved: {file_path}")
-
-                # Process the PDF and add to vectorstore
-                texts = process_pdf(file_path)
-                ingest_to_vectorstore(texts, vectorstore)
-                logger.info("File successfully processed and added to database: {filename}")
-
-                os.remove(file_path)
-                processed_files.append(filename)
-
-            except Exception as e:
-                error_msg = f"Error processing file '{filename}': {str(e)}"
-                logger.error(error_msg)
-                errors.append({"file": filename, "error": error_msg})
+            processed_files.append(filename)
 
         # Prepare response
         response = {"processed_files": processed_files}
@@ -92,11 +70,27 @@ def upload_files():
         logger.error(f"Error during bulk upload: {str(e)}")
         return jsonify({"error": f"{str(e)}"}), 500
 
-@app.route('/ask', methods=['POST'])
-def ask():
+def manage_session():
+    """Check and manage the session data."""
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())
         session['chat_history'] = []
+    else:
+        # Calculate the size of the session data
+        session_data = {
+            'user_id': session['user_id'],
+            'chat_history': session['chat_history']
+        }
+        session_size = len(json.dumps(session_data).encode('utf-8'))
+
+        # Check if the session size exceeds the cookie limit
+        if session_size > COOKIE_SIZE_LIMIT:
+            logger.info("Session size exceeded cookie limit. Resetting chat history.")
+            session['chat_history'] = []
+
+@app.route('/ask', methods=['POST'])
+def ask():
+    manage_session()
         
     data = request.json
     question = data.get("question")
@@ -120,6 +114,10 @@ def ask():
 
 if __name__ == "__main__":
     langtrace.init(api_key=langtrace_api_key)
+
+    # Initialize embeddings and vectorstore
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=openai_api_key)
+    vectorstore = get_vectorstore(embeddings, index_name)
 
     # Initialize chat components
     chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-3.5-turbo")

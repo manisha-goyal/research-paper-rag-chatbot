@@ -1,6 +1,9 @@
 # Base image
 FROM python:3.9-slim
 
+# Set environment variables
+ENV ENVIRONMENT=development
+
 # Set working directory
 WORKDIR /app
 

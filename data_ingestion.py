@@ -1,10 +1,11 @@
 import os
 import logging
 from config import Config
-from langchain_community.document_loaders import PyPDFLoader, DirectoryLoader
+from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_pinecone import PineconeVectorStore
 from pinecone import Pinecone, ServerlessSpec
+from werkzeug.utils import secure_filename
 
 openai_api_key = Config.OPENAI_API_KEY
 pinecone_api_key = Config.PINECONE_API_KEY
@@ -13,6 +14,38 @@ index_name = Config.INDEX_NAME
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+def validate_file(file):
+    """Validate the uploaded file."""
+    filename = file.filename
+    if not filename:
+        return None, "File has no name."
+    if not filename.endswith('.pdf'):
+        return filename, f"File '{filename}' is not a PDF."
+    return filename, None
+
+def process_file(file, vectorstore):
+    """Process a single uploaded file."""
+    data_directory = 'data'
+    if not os.path.exists(data_directory):
+        os.makedirs(data_directory)  # Create the directory if it doesn't exist
+
+    filename = secure_filename(file.filename)
+    file_path = os.path.join('data', filename)
+    file.save(file_path)
+    logger.info(f"File saved: {file_path}")
+
+    try:
+        # Process the PDF and add to vectorstore
+        texts = process_pdf(file_path)
+        ingest_to_vectorstore(texts, vectorstore)
+        logger.info(f"File successfully processed and added to database: {filename}")
+        os.remove(file_path)  # Clean up the temporary file
+        return filename, None
+    except Exception as e:
+        error_msg = f"Error processing file '{filename}': {str(e)}"
+        logger.error(error_msg)
+        return filename, error_msg
 
 def get_vectorstore(embeddings, index_name):
     """Get or create a Pinecone vectorstore"""
