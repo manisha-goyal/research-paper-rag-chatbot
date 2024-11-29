@@ -2,4 +2,4 @@
 .env
 .DS_Store
 __pycache__/
-k8s/secrets.yaml
+k8s/chatbot-secrets.yaml

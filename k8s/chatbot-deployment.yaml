@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: mg7609/research-paper-rag-chatbot:latest
+        image: mg7609/research-rag-chatbot:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
