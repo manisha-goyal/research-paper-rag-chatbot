@@ -18,8 +18,11 @@ logger = logging.getLogger(__name__)
 def get_vectorstore(embeddings, index_name):
     """Get or create a Pinecone vectorstore"""
 
-    # Initialize Pinecone client
-    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"), environment='us-east-1')
+    try:
+        pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"), environment='us-east-1')
+    except Exception as e:
+        logger.error(f"Pinecone initialization failed: {e}")
+        raise
 
     # Check if the index exists and create if it does not
     if index_name not in pc.list_indexes().names():
