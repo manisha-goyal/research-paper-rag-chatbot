@@ -20,7 +20,7 @@ COPY main.py /app/
 COPY templates /app/templates
 
 # Expose port to run flask app
-EXPOSE 8000
+EXPOSE 8080
 
 # Command to run the application
 CMD ["python3", "main.py"]

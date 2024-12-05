@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: mg7609/research-rag-chatbot:latest
+        image: gcr.io/gpuchase-test/rag-chatbot:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -25,24 +25,24 @@ spec:
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: openai-api-key
+              key: OPENAI_API_KEY
         - name: PINECONE_API_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: pinecone-api-key
+              key: PINECONE_API_KEY
         - name: LANGTRACE_API_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: langtrace-api-key
+              key: LANGTRACE_API_KEY
         - name: INDEX_NAME
           value: "research-chatbot-index"
         - name: FLASK_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: flask-secret-key
+              key: FLASK_SECRET_KEY
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data

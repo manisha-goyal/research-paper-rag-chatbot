@@ -1,9 +1,11 @@
+beautifulsoup4
 langchain
 openai
 pinecone-client
 langchain-pinecone
 langchain-openai
 langchain-community
+playwright==1.49.0
 python-dotenv
 pypdf
 Flask
