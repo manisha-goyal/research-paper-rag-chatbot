@@ -82,7 +82,7 @@ jobs:
         uses: "google-github-actions/auth@v2" #'google-github-actions/auth@f112390a2df9932162083945e46d439060d66ec2' # google-github-actions/auth@v2
         with:
           workload_identity_provider: '${{ env.WORKLOAD_IDENTITY_PROVIDER }}'
-          audience: 'https://github.com/google-github-actions/auth'
+          #audience: 'https://github.com/google-github-actions/auth'
 
       # Authenticate Docker to Google Cloud Artifact Registry
       - name: 'Docker Auth'
