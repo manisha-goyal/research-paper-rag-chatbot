@@ -41,7 +41,7 @@ on:
 env:
   PROJECT_ID: 'gpuchase-test' # TODO: update to your Google Cloud project ID
   GAR_LOCATION: 'us-central1' # TODO: update to your region
-  GKE_CLUSTER: 'rag-cluster' # TODO: update to your cluster name
+  GKE_CLUSTER: 'projects/gpuchase-test/locations/us-central1/clusters/rag-cluster' # TODO: update to your cluster name
   GKE_ZONE: 'us-central1' # TODO: update to your cluster zone
   DEPLOYMENT_NAME: 'gke-test' # TODO: update to your deployment name
   REPOSITORY: 'gcr.io' # TODO: update to your Artifact Registry docker repository name
@@ -96,6 +96,7 @@ jobs:
       - name: 'Set up GKE credentials'
         uses: 'google-github-actions/get-gke-credentials@6051de21ad50fbb1767bc93c11357a49082ad116' # google-github-actions/get-gke-credentials@v2
         with:
+          project_id: gpuchase-test
           cluster_name: '${{ env.GKE_CLUSTER }}'
           location: '${{ env.GKE_ZONE }}'
 
