@@ -36,7 +36,7 @@ name: 'Build and Deploy to GKE'
 on:
   push:
     branches:
-      - '"ak-dev"'
+      - 'ak-dev'
 
 env:
   PROJECT_ID: 'gpuchase-test' # TODO: update to your Google Cloud project ID
