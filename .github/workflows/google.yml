@@ -44,7 +44,7 @@ env:
   GKE_CLUSTER: 'projects/gpuchase-test/locations/us-central1/clusters/rag-cluster' # TODO: update to your cluster name
   GKE_ZONE: 'us-central1' # TODO: update to your cluster zone
   DEPLOYMENT_NAME: 'gke-test' # TODO: update to your deployment name
-  REPOSITORY: 'gcr.io' # TODO: update to your Artifact Registry docker repository name
+  REPOSITORY: 'ragregistry' # TODO: update to your Artifact Registry docker repository name
   IMAGE: 'rag-chatbot'
   WORKLOAD_IDENTITY_PROVIDER: 'projects/750926710219/locations/global/workloadIdentityPools/my-pool/providers/my-provider' # TODO: update to your workload identity provider
 
