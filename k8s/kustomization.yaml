@@ -4,3 +4,6 @@ kind: Kustomization
 resources:
   - chatbot-deployment.yaml
   - chatbot-service.yaml
+images:
+  - name: us-central1-docker.pkg.dev/gpuchase-test/ragregistry/rag-chatbot
+    newTag: REPLACE_WITH_DYNAMIC_TAG

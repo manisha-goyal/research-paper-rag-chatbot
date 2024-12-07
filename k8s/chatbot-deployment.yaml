@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: us-central1-docker.pkg.dev/gpuchase-test/ragregistry/rag-chatbot:latest
+        image: us-central1-docker.pkg.dev/gpuchase-test/ragregistry/rag-chatbot:<tag>
         resources:
           requests:
             cpu: "500m"  # 0.5 vCPU requested
