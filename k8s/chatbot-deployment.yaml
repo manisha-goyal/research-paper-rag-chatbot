@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: us-central1-docker.pkg.dev/gpuchase-test/samples/rag-chatbot:latest
+        image: us-central1-docker.pkg.dev/gpuchase-test/ragregistry/rag-chatbot:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
