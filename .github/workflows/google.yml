@@ -121,6 +121,9 @@ jobs:
           #mv kustomize /usr/local/bin/
       - name: Debug System Architecture
         run: uname -a
+
+      - name: Debug Directory
+        run: ls -l
       # Deploy the Docker image to the GKE cluster
       - name: 'Deploy to GKE'
         run: |-
