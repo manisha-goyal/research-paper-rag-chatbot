@@ -12,25 +12,24 @@ WORKDIR /app
 #    echo "deb http://deb.debian.org/debian bullseye-updates main" >> /etc/apt/sources.list
 
 # Install required system dependencies
-#RUN apt-get update && apt-get install -y --no-install-recommends \
-#    libglib2.0-0 \
-#    libgobject-2.0 \
-#    libnss3 \
-#    libnspr4 \
-#    libdbus-1-3 \
-#    libatk1.0-0 \
-#    libatk-bridge2.0-0 \
-#    libcups2 \
-#    libxcomposite1 \
-#    libxrandr2 \
-#    libxdamage1 \
-#    libgbm1 \
-#    libasound2 \
-#    libpangocairo-1.0-0 \
-#    libgtk-3-0 \
-#    wget \
-#    && apt-get clean \
-#    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libglib2.0-0 \
+    libnss3 \
+    libnspr4 \
+    libdbus-1-3 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxcomposite1 \
+    libxrandr2 \
+    libxdamage1 \
+    libgbm1 \
+    libasound2 \
+    libpangocairo-1.0-0 \
+    libgtk-3-0 \
+    wget \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the Python requirements into the container at /app
 COPY requirements.txt /app/
