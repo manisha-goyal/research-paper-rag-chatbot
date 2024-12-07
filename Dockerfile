@@ -7,7 +7,7 @@ ENV ENVIRONMENT=development
 # Set working directory
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libgobject-2.0-0 \
     libnss3 \
@@ -25,8 +25,9 @@ RUN apt-get update && apt-get install -y \
     libpangocairo-1.0-0 \
     libgtk-3-0 \
     wget \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
-    
+
 # Copy the Python requirements into the container at /app
 COPY requirements.txt /app/
 
