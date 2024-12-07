@@ -14,9 +14,8 @@ RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.lis
 # Install required system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
-    libgobject-2.0-0 \
+    libgobject-2.0 \
     libnss3 \
-    libnssutil3 \
     libnspr4 \
     libdbus-1-3 \
     libatk1.0-0 \
