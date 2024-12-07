@@ -128,6 +128,7 @@ jobs:
       - name: 'Deploy to GKE'
         run: |-
           # replacing the image name in the k8s template
+          cd k8s
           kustomize edit set image LOCATION-docker.pkg.dev/PROJECT_ID/REPOSITORY/IMAGE:TAG=$GAR_LOCATION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY/$IMAGE:$GITHUB_SHA
           kustomize build . | kubectl apply -f -
           kubectl rollout status deployment/$DEPLOYMENT_NAME
