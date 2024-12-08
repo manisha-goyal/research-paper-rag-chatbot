@@ -50,6 +50,11 @@ spec:
             secretKeyRef:
               name: app-secrets
               key: FLASK_SECRET_KEY
+        - name: SERPAPI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SERPAPI_API_KEY
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data
