@@ -1,8 +1,8 @@
 import logging
+import sys
 from config import Config
 from flask import Flask, request, jsonify, render_template, session
-from langchain_community.agent_toolkits import PlayWrightBrowserToolkit
-from langchain_community.tools.playwright.utils import create_async_playwright_browser
+from langchain_community.utilities import SerpAPIWrapper
 from langchain.agents import create_react_agent, Tool, AgentExecutor
 from langtrace_python_sdk import langtrace
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
@@ -15,7 +15,7 @@ import uuid
 from langchain import hub
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s', stream=sys.stdout)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
@@ -24,6 +24,7 @@ openai_api_key = Config.OPENAI_API_KEY
 langtrace_api_key = Config.LANGTRACE_API_KEY
 app.secret_key = Config.FLASK_SECRET_KEY
 index_name = Config.INDEX_NAME
+serp_api_key = Config.SERPAPI_API_KEY
 COOKIE_SIZE_LIMIT = 4093
 
 vectorstore = None
@@ -116,7 +117,7 @@ def ask():
     # Create the agent executor
     agent_executor = AgentExecutor(
         agent=agent,
-        tools=tools,
+        tools=[retriever_tool, serpapi_tool],
         verbose=True,
         handle_parsing_errors=True,
         memory=memory
@@ -155,14 +156,13 @@ if __name__ == "__main__":
         description="Use this tool to retrieve documents from the vector store."
     )
 
-    async_browser = create_async_playwright_browser()
+    search = SerpAPIWrapper()
 
-    # Create the toolkit
-    toolkit = PlayWrightBrowserToolkit.from_browser(async_browser=async_browser)
-
-    # Get the tools from the toolkit
-    tools = toolkit.get_tools()
-    tools.append(retriever_tool)
+    serpapi_tool = Tool(
+        name="Search",
+        description="A search engine. Use this to answer questions about current events. Input should be a search query.",
+        func=search.run
+    )
 
     # Initialize chat components
     chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-3.5-turbo")
@@ -179,41 +179,45 @@ if __name__ == "__main__":
     template = """
         You are an intelligent ReAct agent designed for information retrieval and reasoning tasks. Your primary goal is to answer user queries accurately and efficiently using the tools available to you. You have access to:
 
-        Retriever Tool: Fetches documents from a pre-defined knowledge base. Use this tool to retrieve relevant context for answering queries. However, the retrieved documents may sometimes lack sufficient information.
+            Retriever Tool: Fetches documents from a pre-defined knowledge base. Use this tool to retrieve relevant context for answering queries. However, the retrieved documents may sometimes lack sufficient information.
 
-        LangChain Playwright Tool: Enables web searches. Use this tool only when the retrieved documents are insufficient to provide a complete answer. Formulate precise, specific web search queries to extract additional context.
+            SerpAPI Tool: Provides Google search results. Use this tool when:
+                - The retrieved documents from the Retriever Tool are insufficient to address the query.
+                - The query does not seem to require data from the knowledge base (e.g., general knowledge or current events).
 
-        Your Process:
+            Your Process:
 
-        1. Understand the Query: Break down the user query to identify key components.
-        2. Retrieve First: Use the retriever tool to fetch relevant documents and review their contents.
-        3. Evaluate: Assess whether the retrieved documents sufficiently address the query.
-            -If they do, compose your response based solely on this information.
-            -If they do not, use the LangChain playwright tool to conduct a web search.
-        4. Combine and Respond: Synthesize information from both tools (if necessary) to craft a comprehensive, accurate response.
-        5. Explain Your Reasoning: For every response, briefly explain your reasoning and actions to ensure transparency.
-        
-        Important Considerations:
+            1. Understand the Query: Break down the user query to identify key components.
+            2. Retrieve First: Use the Retriever Tool to fetch relevant documents and review their contents.
+            3. Evaluate: Assess whether the retrieved documents sufficiently address the query.
+                - If they do, compose your response based solely on this information.
+                - If they do not, or if the query seems unrelated to the vector store's data, use the SerpAPI Tool to perform a web search.
+            4. Combine and Respond: Synthesize information from both tools (if necessary) to craft a comprehensive, accurate response.
+            5. Explain Your Reasoning: For every response, briefly explain your reasoning and actions to ensure transparency.
 
-        Always prioritize retrieved documents over web searches for speed and reliability.
-        Be concise, but ensure that your response is complete and directly addresses the query.
-        Avoid redundant or unnecessary searches; use the web tool judiciously.
-        Example Workflow:
+            Important Considerations:
 
-        Query: "What are the key components of a ReAct agent?"
-        Use the Retriever Tool to fetch documents related to ReAct agents.
-        Evaluate the results:
-        If the documents are sufficient, answer based on them.
-        If not, use the LangChain Playwright Tool to search the web for authoritative sources.
-        Combine the results into a concise, accurate answer, e.g., "ReAct agents combine reasoning and acting by alternating between analysis and interaction with tools or environments. They excel at handling dynamic tasks like real-time queries or multi-step decision-making."
-    """
+            - Always prioritize retrieved documents over web searches for speed and reliability.
+            - Be concise, but ensure that your response is complete and directly addresses the query.
+            - Avoid redundant or unnecessary searches; use the SerpAPI tool judiciously.
+            - Formulate precise, specific search queries when using the SerpAPI tool to extract relevant and reliable information.
+
+            Example Workflow:
+
+            Query: "What are the key components of a ReAct agent?"
+            1. Use the Retriever Tool to fetch documents related to ReAct agents.
+            2. Evaluate the results:
+                - If the documents are sufficient, answer based on them.
+                - If not, use the SerpAPI Tool to search Google for authoritative sources.
+            3. Combine the results into a concise, accurate answer, e.g., "ReAct agents combine reasoning and acting by alternating between analysis and interaction with tools or environments. They excel at handling dynamic tasks like real-time queries or multi-step decision-making.
+        """
         
     prompt = base_prompt.partial(instructions=template)
 
     
     # Initialize the agent
     agent = create_react_agent(
-        tools=tools,
+        tools=[retriever_tool, serpapi_tool],
         llm=chat,
         prompt=prompt,
     )

@@ -11,6 +11,7 @@ class Config:
     PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
     LANGTRACE_API_KEY = os.getenv('LANGTRACE_API_KEY')
     INDEX_NAME = os.getenv('INDEX_NAME', 'research-chatbot-index')
+    SERPAPI_API_KEY = os.getenv('SERPAPI_API_KEY')
 
 def get_env_variable(var_name, default=None):
     return os.getenv(var_name, default)

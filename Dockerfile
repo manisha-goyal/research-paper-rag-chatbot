@@ -36,7 +36,7 @@ COPY requirements.txt /app/
 
 # Install Python dependencies
 RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r requirements.txt
-RUN playwright install
+#RUN playwright install
 
 # Copy the Flask app and other necessary files into the container
 COPY config.py /app/

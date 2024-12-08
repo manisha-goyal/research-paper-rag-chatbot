@@ -5,9 +5,9 @@ pinecone-client
 langchain-pinecone
 langchain-openai
 langchain-community
-playwright==1.49.0
 python-dotenv
 pypdf
 Flask
+google-search-results
 setuptools
 langtrace-python-sdk
