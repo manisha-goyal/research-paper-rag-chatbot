@@ -1,0 +1,81 @@
+docker tag rag-chatbot:latest gcr.io/gpuchase-test/rag-chatbot:latest
+docker push gcr.io/gpuchase-test/rag-chatbot:latest
+
+gcloud components install kubectl
+
+gcloud container clusters get-credentials rag-cluster --zone us-central1
+kubectl create secret generic app-secrets --from-env-file=.env
+
+kubectl apply -f k8s/chatbot-deployment.yaml
+
+
+
+docker tag inference-container:latest gcr.io/gpuchase-test/inference-container:latest
+docker push gcr.io/gpuchase-test/inference-container:latest
+
+
+docker tag train-container:latest gcr.io/gpuchase-test/train-container:latest
+docker push gcr.io/gpuchase-test/train-container:latest
+
+
+
+gcloud services enable artifactregistry.googleapis.com container.googleapis.com iamcredentials.googleapis.com 
+
+gcloud iam workload-identity-pools create my-pool \                                                                                                                    
+    --project="gpuchase-test" \
+    --location="global" \
+    --display-name="My GitHub Pool"
+
+
+gcloud iam workload-identity-pools providers create-oidc my-provider \
+    --project="gpuchase-test" \
+    --location="global" \
+    --workload-identity-pool="my-pool" \
+    --display-name="My GitHub Provider" \
+    --issuer-uri="https://token.actions.githubusercontent.com" \
+    --allowed-audiences="https://github.com/google-github-actions/auth" \
+    --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository,attribute.workflow=assertion.workflow" \
+    --attribute-condition="assertion.repository_owner=='your-github-username'"
+
+
+gcloud projects add-iam-policy-binding gpuchase-test \                                                                                                                 
+    --member="principalSet://iam.googleapis.com/projects/$(gcloud projects describe gpuchase-test --format='value(projectNumber)')/locations/global/workloadIdentityPools/my-pool/attribute.repository/my-repo" \
+    --role="roles/artifactregistry.admin"
+
+gcloud projects add-iam-policy-binding gpuchase-test \                                                                                                                 
+    --member="principalSet://iam.googleapis.com/projects/$(gcloud projects describe gpuchase-test --format='value(projectNumber)')/locations/global/workloadIdentityPools/my-pool/attribute.repository/my-repo" \
+    --role="roles/container.admin"   
+
+
+gcloud iam workload-identity-pools providers update-oidc my-provider \
+    --workload-identity-pool=my-pool \
+    --project=gpuchase-test \
+    --location=global \
+    --attribute-condition="assertion.repository_owner=='manisha-goyal'"
+
+
+gcloud iam workload-identity-pools providers update-oidc my-provider \
+    --workload-identity-pool=my-pool \
+    --project=gpuchase-test \
+    --location=global \
+    --attribute-condition="assertion.repository_owner=='manisha-goyal' && assertion.repository=='manisha-goyal/research-paper-rag-chatbot'"
+
+
+
+gcloud projects add-iam-policy-binding gpuchase-test \
+    --member="principalSet://iam.googleapis.com/projects/750926710219/locations/global/workloadIdentityPools/my-pool/attribute.repository/manisha-goyal/research-paper-rag-chatbot" \
+    --role="roles/container.admin"
+
+gcloud projects add-iam-policy-binding gpuchase-test \
+    --member="principalSet://iam.googleapis.com/projects/750926710219/locations/global/workloadIdentityPools/my-pool/attribute.repository/manisha-goyal/research-paper-rag-chatbot" \
+    --role="roles/container.admin"
+
+gcloud projects add-iam-policy-binding gpuchase-test \
+    --member="principalSet://iam.googleapis.com/projects/750926710219/locations/global/workloadIdentityPools/my-pool/attribute.repository/manisha-goyal/research-paper-rag-chatbot" \
+    --role="roles/artifactregistry.writer"
+
+
+gcloud artifacts repositories add-iam-policy-binding ragregistry \
+    --location=us-central1 \
+    --member="principalSet://iam.googleapis.com/projects/750926710219/locations/global/workloadIdentityPools/my-pool/attribute.repository/manisha-goyal/research-paper-rag-chatbot" \
+    --role="roles/artifactregistry.reader"

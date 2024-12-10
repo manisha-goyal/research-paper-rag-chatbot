@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: chatbot
+  name: gke-test
 spec:
   replicas: 1
   selector:
@@ -14,7 +14,14 @@ spec:
     spec:
       containers:
       - name: chatbot
-        image: mg7609/research-rag-chatbot:latest
+        image: us-central1-docker.pkg.dev/gpuchase-test/ragregistry/rag-chatbot
+        resources:
+          requests:
+            cpu: "500m"  # 0.5 vCPU requested
+            memory: "1Gi"  # 1 GiB memory requested
+          limits:
+            cpu: "1000m"  # 1 vCPU max limit
+            memory: "2Gi"  # 2 GiB memory max limit
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -25,24 +32,29 @@ spec:
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: openai-api-key
+              key: OPENAI_API_KEY
         - name: PINECONE_API_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: pinecone-api-key
+              key: PINECONE_API_KEY
         - name: LANGTRACE_API_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: langtrace-api-key
+              key: LANGTRACE_API_KEY
         - name: INDEX_NAME
           value: "research-chatbot-index"
         - name: FLASK_SECRET_KEY
           valueFrom:
             secretKeyRef:
               name: app-secrets
-              key: flask-secret-key
+              key: FLASK_SECRET_KEY
+        - name: SERPAPI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SERPAPI_API_KEY
         volumeMounts:
         - name: pdf-data
           mountPath: /app/data

@@ -1,3 +1,4 @@
+beautifulsoup4
 langchain
 openai
 pinecone-client
@@ -7,5 +8,6 @@ langchain-community
 python-dotenv
 pypdf
 Flask
+google-search-results
 setuptools
 langtrace-python-sdk
