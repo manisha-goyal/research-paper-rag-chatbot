@@ -7,10 +7,6 @@ ENV ENVIRONMENT=development
 # Set working directory
 WORKDIR /app
 
-#RUN echo "deb http://deb.debian.org/debian bullseye main" > /etc/apt/sources.list && \
-#    echo "deb http://security.debian.org/debian-security bullseye-security main" >> /etc/apt/sources.list && \
-#    echo "deb http://deb.debian.org/debian bullseye-updates main" >> /etc/apt/sources.list
-
 # Install required system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
@@ -36,7 +32,6 @@ COPY requirements.txt /app/
 
 # Install Python dependencies
 RUN pip3 install --upgrade pip && pip3 install --no-cache-dir -r requirements.txt
-#RUN playwright install
 
 # Copy the Flask app and other necessary files into the container
 COPY config.py /app/
