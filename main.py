@@ -6,12 +6,9 @@ from langchain_community.utilities import SerpAPIWrapper
 from langchain.agents import create_react_agent, Tool, AgentExecutor
 from langtrace_python_sdk import langtrace
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
-#from langchain.chains import ConversationalRetrievalChain
-#from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from data_ingestion import validate_file, get_vectorstore, process_file
 import uuid
-#import json
 from langchain import hub
 
 # Configure logging
@@ -78,7 +75,6 @@ def upload_files():
         logger.error(f"Error during bulk upload: {str(e)}")
         return jsonify({"error": f"{str(e)}"}), 500
 
-
 def manage_session():
     """Check and manage the session data."""
     # Ensure the user ID exists in the session
@@ -94,18 +90,6 @@ def manage_session():
             user_memories[user_id] = ConversationBufferMemory(
                 memory_key="chat_history", return_messages=True
             )
-
-        # Check the size of the chat history for this session
-        #chat_history = user_memories[user_id].load_memory_variables({})
-        #chat_history_size = len(json.dumps(chat_history).encode('utf-8'))
-
-        #if chat_history_size > COOKIE_SIZE_LIMIT:
-         #   logger.info("Chat history size exceeded cookie limit. Clearing memory.")
-          #  user_memories[user_id].clear()
-
-
-    
-
 
 @app.route('/ask', methods=['POST'])
 def ask():
@@ -213,7 +197,6 @@ if __name__ == "__main__":
         """
         
     prompt = base_prompt.partial(instructions=template)
-
     
     # Initialize the agent
     agent = create_react_agent(
@@ -221,8 +204,6 @@ if __name__ == "__main__":
         llm=chat,
         prompt=prompt,
     )
-
-    
 
     logger.info("Starting Flask app...")
     app.run(debug=True, host='0.0.0.0', port=8000)

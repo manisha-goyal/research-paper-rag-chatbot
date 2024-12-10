@@ -272,7 +272,6 @@
                 .then(data => {
                     loadingMessage.remove();
                     console.log(data);
-                    
                     appendMessage(data.answer, 'bot');
                 })
                 .catch(error => {
