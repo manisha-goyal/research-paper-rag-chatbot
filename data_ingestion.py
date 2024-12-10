@@ -16,7 +16,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 def validate_file(file):
-    """Validate the uploaded file."""
+    """Validate the uploaded file.
+    
+    Checks if the file has a name and if it is a PDF.
+    Returns the filename and an error message if validation fails.
+    """
     filename = file.filename
     if not filename:
         return None, "File has no name."
@@ -25,7 +29,11 @@ def validate_file(file):
     return filename, None
 
 def process_file(file, vectorstore):
-    """Process a single uploaded file."""
+    """Process a single uploaded file.
+    
+    Saves the file, processes it to extract text, and ingests the text into the vectorstore.
+    Returns the filename and an error message if processing fails.
+    """
     data_directory = 'data'
     if not os.path.exists(data_directory):
         os.makedirs(data_directory)  # Create the directory if it doesn't exist
@@ -48,9 +56,13 @@ def process_file(file, vectorstore):
         return filename, error_msg
 
 def get_vectorstore(embeddings, index_name):
-    """Get or create a Pinecone vectorstore"""
-
+    """Get or create a Pinecone vectorstore.
+    
+    Initializes Pinecone and checks if the specified index exists.
+    Creates the index if it does not exist and returns the vectorstore.
+    """
     try:
+        # Initialize Pinecone
         pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"), environment='us-east-1')
     except Exception as e:
         logger.error(f"Pinecone initialization failed: {e}")
@@ -77,14 +89,22 @@ def get_vectorstore(embeddings, index_name):
     )
 
 def split_documents(documents):
-    """Split documents into text chunks."""
+    """Split documents into text chunks.
+    
+    Uses a text splitter to divide documents into manageable chunks
+    for processing and ingestion.
+    """
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
     texts = text_splitter.split_documents(documents)
     logger.info(f"Created {len(texts)} chunks")
     return texts
 
 def process_pdf(pdf_path):
-    """Process a single PDF file and return text chunks."""
+    """Process a single PDF file and return text chunks.
+    
+    Loads the PDF, extracts text, and splits it into chunks.
+    Raises an error if the file path is invalid.
+    """
     try:
         # Ensure the path is a valid file
         if not os.path.isfile(pdf_path):
@@ -100,9 +120,14 @@ def process_pdf(pdf_path):
         raise
 
 def ingest_to_vectorstore(texts, vectorstore):
-    """Add documents to vectorstore"""
+    """Add documents to vectorstore.
+    
+    Ingests the provided text chunks into the specified vectorstore
+    and logs the result.
+    """
     try:
         logger.info(f"Starting ingestion of {len(texts)} documents to the vectorstore.")
+        # Ingest documents into the vectorstore
         result = vectorstore.add_documents(texts)
         logger.info(f"Successfully ingested {len(texts)} documents to the vectorstore.")
         return result

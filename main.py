@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+# Initialize environment variables
 openai_api_key = Config.OPENAI_API_KEY
 langtrace_api_key = Config.LANGTRACE_API_KEY
 app.secret_key = Config.FLASK_SECRET_KEY
@@ -24,27 +25,35 @@ index_name = Config.INDEX_NAME
 serp_api_key = Config.SERPAPI_API_KEY
 COOKIE_SIZE_LIMIT = 4093
 
+# Initialize vectorstore and user memories
 vectorstore = None
 user_memories = {}  
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify(status='healthy'), 200
+    """Health check endpoint to verify the service is running."""
+    return jsonify(status='healthy'), 200  # Return a healthy status
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    """Render the homepage for the chatbot application."""
+    return render_template('index.html')  # Render the main HTML template
 
 @app.route('/upload', methods=['POST'])
 def upload_files():
+    """Handle file uploads for processing and validation.
+    
+    Accepts multiple files, validates them, processes them, and returns
+    a response with the processed files and any errors encountered.
+    """
     files = request.files.getlist('files')  # Handle multiple files
     
     if not files:
-        logger.error("No files provided for bulk upload.")
+        logger.error("No files provided for bulk upload.")   # Log error if no files
         return jsonify({"error": "No files provided"}), 400
 
-    processed_files = []
-    errors = []
+    processed_files = []  # List to store successfully processed files
+    errors = []  # List to store any errors encountered
 
     try:
         for file in files:
@@ -76,27 +85,38 @@ def upload_files():
         return jsonify({"error": f"{str(e)}"}), 500
 
 def manage_session():
-    """Check and manage the session data."""
+    """Check and manage the session data.
+    
+    Ensures that a unique user ID is created for each session and
+    initializes a memory buffer for storing conversation history.
+    """
     # Ensure the user ID exists in the session
     if 'user_id' not in session:
         session['user_id'] = str(uuid.uuid4())  # Generate a unique user ID
         user_memories[session['user_id']] = ConversationBufferMemory(
-            memory_key="chat_history", return_messages=True
+            memory_key="chat_history", return_messages=True  # Initialize memory for user
         )
     else:
         # Retrieve the memory associated with the user ID
         user_id = session['user_id']
         if user_id not in user_memories:
             user_memories[user_id] = ConversationBufferMemory(
-                memory_key="chat_history", return_messages=True
+                memory_key="chat_history", return_messages=True  # Initialize memory if not present
             )
 
 @app.route('/ask', methods=['POST'])
 def ask():
+    """Endpoint to handle user questions.
+    
+    Manages user sessions, retrieves the user's question from the request,
+    and invokes the agent executor to get an answer. Returns the answer
+    or an error message if something goes wrong.
+    """
     manage_session()
     data = request.json
     question = data.get("question")
     
+    # Get user's memory
     memory = user_memories[session['user_id']]
     # Create the agent executor
     agent_executor = AgentExecutor(
@@ -108,26 +128,23 @@ def ask():
     )
 
     try:
-        '''res = qa.invoke({
-            "question": question, 
-            "chat_history": session.get('chat_history', [])
-        })'''
-        
+        # Invoke the agent with the question
         res = agent_executor.invoke({'input':question})
 
-        '''history = (res["question"], res["answer"])
-        chat_history = session.get('chat_history', [])
-        chat_history.append(history)
-        session['chat_history'] = chat_history'''
-        print(res)
         logger.info(f"User asked: {question}")
-        return jsonify({'answer':res['output']})
+        return jsonify({'answer':res['output']})  # Return the answer
     except Exception as e:
         logger.error(f"Error during question processing: {str(e)}")
-        print(str(e))
         return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
+    """Main entry point for the application.
+    
+    Initializes the necessary components, including embeddings, vectorstore,
+    tools, and the agent, and starts the Flask application.
+    """
+
+    # Initialize langtrace with API key
     langtrace.init(api_key=langtrace_api_key)
 
     # Initialize embeddings and vectorstore
@@ -136,10 +153,11 @@ if __name__ == "__main__":
 
     retriever_tool = Tool(
         name="Retriever",
-        func=vectorstore.as_retriever().get_relevant_documents,
-        description="Use this tool to retrieve documents from the vector store."
+        func=vectorstore.as_retriever().get_relevant_documents,  # Function to retrieve documents
+        description="Use this tool to retrieve documents from the vector store."  # Tool description
     )
 
+    # Initialize the search tool
     search = SerpAPIWrapper()
 
     serpapi_tool = Tool(
@@ -150,16 +168,7 @@ if __name__ == "__main__":
 
     # Initialize chat components
     chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-3.5-turbo")
-    '''qa = ConversationalRetrievalChain.from_llm(
-        llm=chat, chain_type="stuff", retriever=vectorstore.as_retriever()
-    )'''
     base_prompt = hub.pull("langchain-ai/react-agent-template")
-
-  
-    '''template="""
-        You are an assistant capable of reasoning and acting based on available tools.
-        Use the tools provided to complete the user's task. Think step-by-step.
-        """'''
     template = """
         You are an intelligent ReAct agent designed for information retrieval and reasoning tasks. Your primary goal is to answer user queries accurately and efficiently using the tools available to you. You have access to:
 
@@ -196,6 +205,7 @@ if __name__ == "__main__":
             3. Combine the results into a concise, accurate answer, e.g., "ReAct agents combine reasoning and acting by alternating between analysis and interaction with tools or environments. They excel at handling dynamic tasks like real-time queries or multi-step decision-making.
         """
         
+    # Create the prompt with instructions
     prompt = base_prompt.partial(instructions=template)
     
     # Initialize the agent
@@ -206,4 +216,4 @@ if __name__ == "__main__":
     )
 
     logger.info("Starting Flask app...")
-    app.run(debug=True, host='0.0.0.0', port=8000)
+    app.run(debug=True, host='0.0.0.0', port=8000)  # Start the Flask app
