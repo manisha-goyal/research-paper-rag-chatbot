@@ -62,17 +62,6 @@ jobs:
       - name: 'Checkout'
         uses: 'actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332' # actions/checkout@v4
 
-
-       # Debug OIDC Token
-      - name: Debug OIDC Token
-        run: |
-          echo $ACTIONS_ID_TOKEN_REQUEST_URL && echo $ACTIONS_ID_TOKEN_REQUEST_TOKEN
-
-          TOKEN=$(curl -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" $ACTIONS_ID_TOKEN_REQUEST_URL)
-          echo "Raw OIDC Token: $TOKEN"  # Be cautious when enabling this in public repositories!
-          
-          # Decode and print the token's payload securely (base64-decoding the payload)
-          echo $TOKEN | cut -d "." -f2 | base64 -d | jq
       # Configure Workload Identity Federation and generate an access token.
       #
       # See https://github.com/google-github-actions/auth for more options,
@@ -119,8 +108,6 @@ jobs:
         #  curl -sfLo kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.3/kustomize_v5.4.3_linux_amd64.tar.gz
          # chmod u+x kustomize
           #mv kustomize /usr/local/bin/
-      - name: Debug System Architecture
-        run: uname -a
 
       - name: Debug Directory
         run: ls -l
