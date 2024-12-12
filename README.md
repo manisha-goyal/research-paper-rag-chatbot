@@ -51,6 +51,9 @@ docker run --env-file .env -e ENVIRONMENT=Development -p 8000:8000 rag-chatbot:l
 ### Step 4: Access the Application
 Open your web browser and navigate to http://localhost:8000/
 
+## System Architecture Diagram
+![System Architecture Diagram](screenshots/architecture-diagram.png)
+
 ## Chatbot Interface
 ![Chatbot Interface](screenshots/chatbot-interface.png)
 
