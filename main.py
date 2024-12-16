@@ -168,7 +168,7 @@ if __name__ == "__main__":
 
     # Initialize chat components
     chat = ChatOpenAI(verbose=True, temperature=0, model_name="gpt-3.5-turbo")
-    base_prompt = hub.pull("langchain-ai/react-agent-template")
+    base_prompt = hub.pull("hwchase17/react")
     template = """
         You are an intelligent ReAct agent designed for information retrieval and reasoning tasks. Your primary goal is to answer user queries accurately and efficiently using the tools available to you. You have access to:
 
@@ -178,24 +178,15 @@ if __name__ == "__main__":
                 - The retrieved documents from the Retriever Tool are insufficient to address the query.
                 - The query does not seem to require data from the knowledge base (e.g., general knowledge or current events).
 
-            Your Process:
+             **Your Strategy:**
+            1. Try the Retriever Tool first for any query.
+            2. Assess whether the retrieved documents sufficiently answer the query or if you need more informmation:
+                - If yes, respond using the documents.
+                - If no, or if the query requires broader knowledge, use the SERP API.
+            3. Combine results from both tools if necessary to craft a complete response.
+            4. Clearly explain your reasoning and actions in the response.
 
-            1. Understand the Query: Break down the user query to identify key components.
-            2. Retrieve First: Use the Retriever Tool to fetch relevant documents and review their contents.
-            3. Evaluate: Assess whether the retrieved documents sufficiently address the query.
-                - If they do, compose your response based solely on this information.
-                - If they do not, or if the query seems unrelated to the vector store's data, use the SerpAPI Tool to perform a web search.
-            4. Combine and Respond: Synthesize information from both tools (if necessary) to craft a comprehensive, accurate response.
-            5. Explain Your Reasoning: For every response, briefly explain your reasoning and actions to ensure transparency.
-
-            Important Considerations:
-
-            - Always prioritize retrieved documents over web searches for speed and reliability.
-            - Be concise, but ensure that your response is complete and directly addresses the query.
-            - Avoid redundant or unnecessary searches; use the SerpAPI tool judiciously.
-            - Formulate precise, specific search queries when using the SerpAPI tool to extract relevant and reliable information.
-
-            Example Workflow:
+            Always be concise but complete. Avoid unnecessary searches.
 
             Query: "What are the key components of a ReAct agent?"
             1. Use the Retriever Tool to fetch documents related to ReAct agents.
